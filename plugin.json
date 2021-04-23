@@ -1,0 +1,29 @@
+{
+    "name": "Replicator",
+    "url": "https://github.com/PostHog/posthog-plugin-replicator",
+    "description": "Replicate PostHog event stream in another PostHog instance",
+    "main": "index.ts",
+    "config": [
+        {
+            "key": "host",
+            "hint": "E.g. posthog.yourcompany.com",
+            "name": "Host",
+            "type": "string",
+            "required": true
+        },
+        {
+            "key": "project_api_key",
+            "hint": "Grab it from e.g. https://posthog.yourcompany.com/project/settings",
+            "name": "Project API Key",
+            "type": "string",
+            "required": true
+        },
+        {
+            "key": "replication",
+            "hint": "How many times should each event be sent (default: once)",
+            "name": "Replication",
+            "type": "string",
+            "required": false
+        }
+    ]
+}
