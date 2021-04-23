@@ -23,6 +23,7 @@
             "hint": "How many times should each event be sent (default: once)",
             "name": "Replication",
             "type": "string",
+            "default": "1",
             "required": false
         }
     ]
