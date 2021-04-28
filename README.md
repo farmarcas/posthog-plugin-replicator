@@ -1,4 +1,4 @@
-# PostHog Plugin: Replication
+# PostHog Plugin: Replicator
 
 Replicate PostHog event stream in another PostHog instance. Simply: export events.
 
