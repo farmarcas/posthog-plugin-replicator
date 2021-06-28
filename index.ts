@@ -24,6 +24,7 @@ const plugin: Plugin<ReplicatorMeta> = {
                     body: JSON.stringify(batch),
                     headers: { 'Content-Type': 'application/json' },
                 })
+                console.log(`Flushing ${batch.length} event${batch.length > 1 ? 's' : ''} to ${config.host}`)
             },
         })
     },
