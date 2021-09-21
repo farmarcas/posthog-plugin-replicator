@@ -1,6 +1,6 @@
 {
     "name": "posthog-plugin-replicator",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Replicate PostHog event stream in another PostHog instance",
     "keywords": [
         "posthog",
