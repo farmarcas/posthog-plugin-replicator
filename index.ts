@@ -14,7 +14,7 @@ const plugin: Plugin<ReplicatorMetaInput> = {
         const batch = []
         for (const event of events) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { team_id, now, offset, ...sendableEvent } = { ...event, token: config.project_api_key }
+            const { team_id, now, offset, sent_at, ...sendableEvent } = { ...event, token: config.project_api_key }
             const replication = parseInt(config.replication) || 1
             for (let i = 0; i < replication; i++) {
                 batch.push(sendableEvent)
