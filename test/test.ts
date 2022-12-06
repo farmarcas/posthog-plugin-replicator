@@ -2,15 +2,15 @@ jest.mock('node-fetch', () => jest.fn())
 import fetch from 'node-fetch'
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>
 
-const plugin = require('./index')
+const plugin = require('../index')
 const config = {
     host: 'localhost:8000',
     project_api_key: 'test',
     replication: 1,
 }
 
-const mockEvent = require('./test/data/event.json')
-const mockAutocaptureEvent = require("./test/data/autocapture-event.json")
+const mockEvent = require('./data/event.json')
+const mockAutocaptureEvent = require('./data/autocapture-event.json')
 
 describe('replicator plugin', () => {
     beforeEach(() => {
@@ -24,8 +24,26 @@ describe('replicator plugin', () => {
             expect(mockFetch.mock.calls[0]).toEqual([
                 'https://localhost:8000/e',
                 {
-                    body:
-                        '[{"distinct_id":"1234","ip":"127.0.0.1","event":"my-event","properties":{"foo":"bar"},"token":"test"},{"distinct_id":"1234","ip":"127.0.0.1","event":"my-event","properties":{"foo":"bar"},"token":"test"},{"distinct_id":"1234","ip":"127.0.0.1","event":"my-event","properties":{"foo":"bar"},"token":"test"}]',
+                    body: JSON.stringify([
+                        {
+                            distinct_id: '1234',
+                            event: 'my-event',
+                            properties: { foo: 'bar', $ip: '127.0.0.1' },
+                            token: 'test',
+                        },
+                        {
+                            distinct_id: '1234',
+                            event: 'my-event',
+                            properties: { foo: 'bar', $ip: '127.0.0.1' },
+                            token: 'test',
+                        },
+                        {
+                            distinct_id: '1234',
+                            event: 'my-event',
+                            properties: { foo: 'bar', $ip: '127.0.0.1' },
+                            token: 'test',
+                        },
+                    ]),
                     headers: { 'Content-Type': 'application/json' },
                     method: 'POST',
                 },
@@ -34,19 +52,20 @@ describe('replicator plugin', () => {
     })
     describe('autocapture support', () => {
         it('should correctly reverse the autocapture format', async () => {
-            await plugin.exportEvents([mockAutocaptureEvent], {config})
+            await plugin.exportEvents([mockAutocaptureEvent], { config })
             const parsedBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string)
 
             expect(parsedBody[0]).toEqual({
                 distinct_id: '12345',
                 event: '$autocapture',
-                ip: '127.0.0.1',
+
                 timestamp: '2022-12-06T12:54:30.810Z',
                 token: 'test',
                 uuid: '0184e780-8f2b-0000-9e00-4cdcba315fe9',
                 properties: {
                     $browser: 'Firefox',
                     $os: 'Mac OS X',
+                    $ip: '127.0.0.1',
                     $elements: [
                         {
                             order: 0,
