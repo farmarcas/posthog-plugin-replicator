@@ -15,6 +15,7 @@ const reverseAutocaptureEvent = (autocaptureEvent: any) => {
     const { elements, properties, ...event } = autocaptureEvent
 
     const $elements = elements.map((el: any) => {
+        // $el_text and attributes are the only differently named parts
         const { attributes, text,  ...commonProps } = el
         return {
             ...commonProps,
