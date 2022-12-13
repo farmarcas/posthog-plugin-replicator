@@ -49,7 +49,38 @@ describe('replicator plugin', () => {
                 },
             ])
         })
+
+        it('should reuse the values for timestamp, event, uuid', async () => {
+            // This is important to ensure that we end up sending the correct
+            // values for the properties that we dedup.
+            // NOTE: we should be reasonability confident that these are the
+            // values we'd recieve as per the functional test here:
+            // https://github.com/PostHog/posthog/blob/771691e8bdd6bf4465887b88d0a6019c9b4b91d6/plugin-server/functional_tests/exports-v2.test.ts#L151
+
+            await plugin.exportEvents(
+                [{ distinct_id: '1234', event: 'my-event', sent_at: 'asdf', uuid: 'asdf-zxcv' }],
+                { config }
+            )
+
+            expect(mockFetch.mock.calls[0]).toEqual([
+                'https://localhost:8000/e',
+                {
+                    body: JSON.stringify([
+                        {
+                            distinct_id: '1234',
+                            event: 'my-event',
+                            sent_at: 'asdf',
+                            uuid: 'asdf-zxcv',
+                            token: 'test',
+                        },
+                    ]),
+                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                },
+            ])
+        })
     })
+
     describe('autocapture support', () => {
         it('should correctly reverse the autocapture format', async () => {
             await plugin.exportEvents([mockAutocaptureEvent], { config })
