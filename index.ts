@@ -59,28 +59,34 @@ const plugin: Plugin<ReplicatorMetaInput> = {
         }
 
         if (batch.length > 0) {
+            const batchDescription = `${batch.length} event${batch.length > 1 ? 's' : ''}`
             await fetch(`https://${config.host.replace(/\/$/, '')}/e`, {
                 method: 'POST',
                 body: JSON.stringify(batch),
                 headers: { 'Content-Type': 'application/json' },
             }).then(
                 (res) => {
-                    const batchSize = `${batch.length} event${batch.length > 1 ? 's' : ''}`
                     if (res.ok) {
-                        console.log(`Flushed ${batchSize} to ${config.host}`)
+                        console.log(`Flushed ${batchDescription} to ${config.host}`)
                     } else if (res.status >= 500) {
                         // Server error, will retry later
+                        console.error(
+                            'Failed to submit ${batchSize} due to server error: ${res.status} ${res.statusText}'
+                        )
                         throw new RetryError('Server error: ${res.status} ${res.statusText}')
                     } else {
                         // Invalid request, skip the batch and move forward
-                        console.log(`Skipping ${batchSize} rejected by ${config.host}: ${res.status} ${res.statusText}`)
+                        console.warn(
+                            `Skipping ${batchDescription}, rejected by ${config.host}: ${res.status} ${res.statusText}`
+                        )
                     }
                 },
                 (err) => {
                     // Error handling, see https://github.com/node-fetch/node-fetch/blob/2.x/ERROR-HANDLING.md
                     if (err.name === 'AbortError' || err.name === 'FetchError') {
                         // Network / timeout error, will retry later
-                        throw new RetryError(err.toString())
+                        console.error(`Failed to submit ${batchDescription} due to network error`, err)
+                        throw new RetryError(`Target is unreachable: ${(err as Error).message}`)
                     }
                     throw err // Unhandled error, stop the export
                 }
