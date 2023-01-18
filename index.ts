@@ -69,13 +69,12 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                     if (res.ok) {
                         console.log(`Flushed ${batchDescription} to ${config.host}`)
                     } else if (res.status >= 500) {
-                        // Server error, will retry later
-                        console.error(
-                            'Failed to submit ${batchSize} due to server error: ${res.status} ${res.statusText}'
-                        )
+                        // Server error, retry the batch later
+                        console.error('Failed to submit ${batchSize} to ${config.host} due to server error', res)
                         throw new RetryError('Server error: ${res.status} ${res.statusText}')
                     } else {
-                        // Invalid request, skip the batch and move forward
+                        // node-fetch handles 300s internaly, so we're left with 400s here: skip the batch and move forward
+                        // We might have old events in ClickHouse that don't pass new stricter checks, don't fail the whole export if that happens
                         console.warn(
                             `Skipping ${batchDescription}, rejected by ${config.host}: ${res.status} ${res.statusText}`
                         )
@@ -84,8 +83,11 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                 (err) => {
                     // Error handling, see https://github.com/node-fetch/node-fetch/blob/2.x/ERROR-HANDLING.md
                     if (err.name === 'AbortError' || err.name === 'FetchError') {
-                        // Network / timeout error, will retry later
-                        console.error(`Failed to submit ${batchDescription} due to network error`, err)
+                        // Network / timeout error, retry the batch later
+                        console.error(
+                            `Failed to submit ${batchDescription} to ${config.host} due to network error`,
+                            err
+                        )
                         throw new RetryError(`Target is unreachable: ${(err as Error).message}`)
                     }
                     throw err // Unhandled error, stop the export

@@ -1,6 +1,5 @@
-jest.mock('node-fetch', () => jest.fn())
+jest.mock('node-fetch')
 import fetch from 'node-fetch'
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>
 
 const plugin = require('../index')
 const config = {
@@ -12,9 +11,12 @@ const config = {
 const mockEvent = require('./data/event.json')
 const mockAutocaptureEvent = require('./data/autocapture-event.json')
 
-describe('replicator plugin', () => {
+describe('event pre-processing', () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+    mockFetch.mockResolvedValue({ ok: true } as any)
+
     beforeEach(() => {
-        mockFetch.mockReset()
+        mockFetch.mockClear()
     })
 
     describe('it replicates events', () => {
@@ -84,6 +86,7 @@ describe('replicator plugin', () => {
     describe('autocapture support', () => {
         it('should correctly reverse the autocapture format', async () => {
             await plugin.exportEvents([mockAutocaptureEvent], { config })
+
             const parsedBody = JSON.parse(mockFetch.mock.calls[0][1]?.body as string)
 
             expect(parsedBody[0]).toEqual({
