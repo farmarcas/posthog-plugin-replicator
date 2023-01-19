@@ -328,9 +328,12 @@ describe('payload contents', () => {
                 project_api_key: 'test',
                 replication: 1,
             }
+            const logSpy = jest.spyOn(console, 'error')
             await expect(plugin.exportEvents([mockEvent], { config: badConfig })).rejects.toThrow(
                 TypeError('Only absolute URLs are supported')
             )
+            expect(logSpy).toHaveBeenCalledTimes(1)
+            logSpy.mockReset()
         })
     })
 })

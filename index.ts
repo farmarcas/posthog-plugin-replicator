@@ -60,6 +60,7 @@ const plugin: Plugin<ReplicatorMetaInput> = {
 
         if (batch.length > 0) {
             const batchDescription = `${batch.length} event${batch.length > 1 ? 's' : ''}`
+
             await fetch(`https://${config.host.replace(/\/$/, '')}/e`, {
                 method: 'POST',
                 body: JSON.stringify(batch),
@@ -91,6 +92,7 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                         throw new RetryError(`Target is unreachable: ${(err as Error).message}`)
                     }
                     // Other errors are rethrown to stop the export
+                    console.error(`Failed to submit ${batchDescription} to ${config.host} due to unexpected error`, err)
                     throw err
                 }
             )
