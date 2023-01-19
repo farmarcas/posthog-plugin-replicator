@@ -71,7 +71,7 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                     } else if (res.status >= 500) {
                         // Server error, retry the batch later
                         console.error('Failed to submit ${batchSize} to ${config.host} due to server error', res)
-                        throw new RetryError('Server error: ${res.status} ${res.statusText}')
+                        throw new RetryError(`Server error: ${res.status} ${res.statusText}`)
                     } else {
                         // node-fetch handles 300s internaly, so we're left with 400s here: skip the batch and move forward
                         // We might have old events in ClickHouse that don't pass new stricter checks, don't fail the whole export if that happens
@@ -81,16 +81,17 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                     }
                 },
                 (err) => {
-                    // Error handling, see https://github.com/node-fetch/node-fetch/blob/2.x/ERROR-HANDLING.md
                     if (err.name === 'AbortError' || err.name === 'FetchError') {
                         // Network / timeout error, retry the batch later
+                        // See https://github.com/node-fetch/node-fetch/blob/2.x/ERROR-HANDLING.md
                         console.error(
                             `Failed to submit ${batchDescription} to ${config.host} due to network error`,
                             err
                         )
                         throw new RetryError(`Target is unreachable: ${(err as Error).message}`)
                     }
-                    throw err // Unhandled error, stop the export
+                    // Other errors are rethrown to stop the export
+                    throw err
                 }
             )
         }

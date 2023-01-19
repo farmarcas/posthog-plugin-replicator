@@ -78,8 +78,8 @@ describe('payload contents', () => {
         it('should reuse the values for timestamp, event, uuid', async () => {
             // This is important to ensure that we end up sending the correct
             // values for the properties that we dedup.
-            // NOTE: we should be reasonability confident that these are the
-            // values we'd recieve as per the functional test here:
+            // NOTE: we should be reasonably confident that these are the
+            // values we'd receive as per the functional test here:
             // https://github.com/PostHog/posthog/blob/771691e8bdd6bf4465887b88d0a6019c9b4b91d6/plugin-server/functional_tests/exports-v2.test.ts#L151
 
             const req = acceptAndCaptureRequest()
