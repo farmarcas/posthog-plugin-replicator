@@ -65,6 +65,7 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                 method: 'POST',
                 body: JSON.stringify(batch),
                 headers: { 'Content-Type': 'application/json' },
+                // TODO: add a timeout signal to make sure we retry if capture is slow, instead of failing the export
             }).then(
                 (res) => {
                     if (res.ok) {
