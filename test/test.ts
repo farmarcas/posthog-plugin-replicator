@@ -1,3 +1,4 @@
+import { RetryError } from '@posthog/plugin-scaffold'
 import { MockedRequest, rest } from 'msw'
 import { setupServer } from 'msw/node'
 
@@ -28,7 +29,7 @@ describe('payload contents', () => {
         mswServer.close()
     })
 
-    describe('events are pre-processed correctly', () => {
+    describe('event pre-processing', () => {
         // Helper handler to accept one single request to the capture endpoint, return a 200 and capture the incoming request.
         const acceptAndCaptureRequest = () => {
             return new Promise<MockedRequest>((resolve, reject) => {
@@ -273,6 +274,63 @@ describe('payload contents', () => {
                     },
                 },
             ])
+        })
+    })
+
+    describe('error management', () => {
+        it('succeeds and logs on 200', async () => {
+            const logSpy = jest.spyOn(console, 'log')
+            mswServer.use(
+                rest.post(captureUrl, (_, res, ctx) => {
+                    return res(ctx.status(200))
+                })
+            )
+            await plugin.exportEvents([mockEvent, mockEvent], { config })
+            expect(logSpy).toHaveBeenCalledWith('Flushed 2 events to localhost:8000')
+            logSpy.mockReset()
+        })
+
+        it('skips and warns without throwing on 400s', async () => {
+            const logSpy = jest.spyOn(console, 'warn')
+            mswServer.use(
+                rest.post(captureUrl, (_, res, ctx) => {
+                    return res(ctx.status(400))
+                })
+            )
+            await plugin.exportEvents([mockEvent, mockEvent], { config })
+            expect(logSpy).toHaveBeenCalledWith('Skipping 2 events, rejected by localhost:8000: 400 Bad Request')
+            logSpy.mockReset()
+        })
+
+        it('throws RetryError on 500s', async () => {
+            const logSpy = jest.spyOn(console, 'error')
+            mswServer.use(
+                rest.post(captureUrl, (_, res, ctx) => {
+                    return res(ctx.status(500))
+                })
+            )
+            await expect(plugin.exportEvents([mockEvent], { config })).rejects.toThrow(RetryError)
+            expect(logSpy).toHaveBeenCalledTimes(1)
+            logSpy.mockReset()
+        })
+
+        it('throws RetryError on ECONNREFUSED', async () => {
+            const logSpy = jest.spyOn(console, 'error')
+            mswServer.close()
+            await expect(plugin.exportEvents([mockEvent], { config })).rejects.toThrow(RetryError)
+            expect(logSpy).toHaveBeenCalledTimes(1)
+            logSpy.mockReset()
+        })
+
+        it('rethrows other fetch errors unhandled', async () => {
+            const badConfig = {
+                host: '/invalid',
+                project_api_key: 'test',
+                replication: 1,
+            }
+            await expect(plugin.exportEvents([mockEvent], { config: badConfig })).rejects.toThrow(
+                TypeError('Only absolute URLs are supported')
+            )
         })
     })
 })
