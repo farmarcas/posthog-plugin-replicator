@@ -1,6 +1,7 @@
 import { RetryError } from '@posthog/plugin-scaffold'
 import { MockedRequest, rest } from 'msw'
 import { setupServer } from 'msw/node'
+import { FetchError } from 'node-fetch'
 
 const plugin = require('../index')
 
@@ -310,7 +311,9 @@ describe('payload contents', () => {
                 })
             )
             await expect(plugin.exportEvents([mockEvent], { config })).rejects.toThrow(RetryError)
-            expect(logSpy).toHaveBeenCalledTimes(1)
+            expect(logSpy).toHaveBeenCalledWith(
+                'Failed to submit 1 event to localhost:8000 due to server error: 500 Internal Server Error'
+            )
             logSpy.mockReset()
         })
 
@@ -318,7 +321,10 @@ describe('payload contents', () => {
             const logSpy = jest.spyOn(console, 'error')
             mswServer.close()
             await expect(plugin.exportEvents([mockEvent], { config })).rejects.toThrow(RetryError)
-            expect(logSpy).toHaveBeenCalledTimes(1)
+            expect(logSpy).toHaveBeenCalledWith(
+                'Failed to submit 1 event to localhost:8000 due to network error',
+                expect.any(FetchError)
+            )
             logSpy.mockReset()
         })
 
