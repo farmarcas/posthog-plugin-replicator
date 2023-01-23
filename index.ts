@@ -72,7 +72,9 @@ const plugin: Plugin<ReplicatorMetaInput> = {
                         console.log(`Flushed ${batchDescription} to ${config.host}`)
                     } else if (res.status >= 500) {
                         // Server error, retry the batch later
-                        console.error('Failed to submit ${batchSize} to ${config.host} due to server error', res)
+                        console.error(
+                            `Failed to submit ${batchDescription} to ${config.host} due to server error: ${res.status} ${res.statusText}`
+                        )
                         throw new RetryError(`Server error: ${res.status} ${res.statusText}`)
                     } else {
                         // node-fetch handles 300s internaly, so we're left with 400s here: skip the batch and move forward
