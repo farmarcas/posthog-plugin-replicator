@@ -25,6 +25,14 @@
             "type": "string",
             "default": "1",
             "required": false
+        },
+        {
+            "key": "eventsToIgnore",
+            "name": "Events to ignore",
+            "type": "string",
+            "default": "",
+            "hint": "Comma separated list of events to ignore",
+            "required": false
         }
     ]
 }
