@@ -31,7 +31,7 @@
             "name": "Events to ignore",
             "type": "string",
             "default": "",
-            "hint": "Comma separated list of events to ignore",
+            "hint": "Comma-separated list of events to ignore, e.g. $pageleave, purchase",
             "required": false
         }
     ]

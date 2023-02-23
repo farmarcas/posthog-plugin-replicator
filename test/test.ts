@@ -12,7 +12,7 @@ const config = {
     host: captureHost,
     project_api_key: 'test',
     replication: 1,
-    eventsToIgnore: 'my-event-alpha, my-event-beta, my-event-gamma',
+    events_to_ignore: 'my-event-alpha, my-event-beta, my-event-gamma',
 }
 
 const mockEvent = require('./data/event.json')
@@ -356,7 +356,7 @@ describe('payload contents', () => {
                 host: '/invalid',
                 project_api_key: 'test',
                 replication: 1,
-                eventsToIgnore: '',
+                events_to_ignore: '',
             }
             const logSpy = jest.spyOn(console, 'error')
             await expect(plugin.exportEvents([mockEvent], { config: badConfig })).rejects.toThrow(
