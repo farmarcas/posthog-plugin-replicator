@@ -12,10 +12,12 @@ const config = {
     host: captureHost,
     project_api_key: 'test',
     replication: 1,
+    eventsToIgnore: 'my-event-alpha, my-event-beta, my-event-gamma',
 }
 
 const mockEvent = require('./data/event.json')
 const mockAutocaptureEvent = require('./data/autocapture-event.json')
+const mockEventsToIgnore = require('./data/events-to-ignore.json')
 
 describe('payload contents', () => {
     const mswServer = setupServer()
@@ -61,6 +63,27 @@ describe('payload contents', () => {
                     properties: { foo: 'bar', $ip: '127.0.0.1' },
                     token: 'test',
                 },
+                {
+                    distinct_id: '1234',
+                    event: 'my-event',
+                    properties: { foo: 'bar', $ip: '127.0.0.1' },
+                    token: 'test',
+                },
+                {
+                    distinct_id: '1234',
+                    event: 'my-event',
+                    properties: { foo: 'bar', $ip: '127.0.0.1' },
+                    token: 'test',
+                },
+            ])
+        })
+
+        it('should skip ignored events', async () => {
+            const req = acceptAndCaptureRequest()
+            await plugin.exportEvents([mockEvent, ...mockEventsToIgnore, mockEvent], { config })
+            const body = await req.then((res) => res.json())
+
+            expect(body).toEqual([
                 {
                     distinct_id: '1234',
                     event: 'my-event',
@@ -333,6 +356,7 @@ describe('payload contents', () => {
                 host: '/invalid',
                 project_api_key: 'test',
                 replication: 1,
+                eventsToIgnore: '',
             }
             const logSpy = jest.spyOn(console, 'error')
             await expect(plugin.exportEvents([mockEvent], { config: badConfig })).rejects.toThrow(
