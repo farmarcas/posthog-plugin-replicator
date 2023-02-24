@@ -25,6 +25,14 @@
             "type": "string",
             "default": "1",
             "required": false
+        },
+        {
+            "key": "events_to_ignore",
+            "name": "Events to ignore",
+            "type": "string",
+            "default": "",
+            "hint": "Comma-separated list of events to ignore, e.g. $pageleave, purchase",
+            "required": false
         }
     ]
 }

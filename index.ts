@@ -6,6 +6,7 @@ export interface ReplicatorMetaInput {
         host: string
         project_api_key: string
         replication: string
+        events_to_ignore: string
     }
 }
 
@@ -39,8 +40,18 @@ const reverseAutocaptureEvent = (autocaptureEvent: StrippedEvent) => {
 
 const plugin: Plugin<ReplicatorMetaInput> = {
     exportEvents: async (events, { config }) => {
+        const eventsToIgnore = new Set(
+            config.events_to_ignore && config.events_to_ignore.trim() !== ''
+                ? config.events_to_ignore.split(',').map((event) => event.trim())
+                : null
+        )
         const batch = []
         for (const event of events) {
+            // skip if event has to be ignored
+            if (eventsToIgnore.has(event.event)) {
+                continue
+            }
+
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { team_id, ip, person: _, ...sendableEvent } = { ...event, token: config.project_api_key }
 
