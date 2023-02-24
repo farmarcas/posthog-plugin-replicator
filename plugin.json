@@ -27,7 +27,7 @@
             "required": false
         },
         {
-            "key": "eventsToIgnore",
+            "key": "events_to_ignore",
             "name": "Events to ignore",
             "type": "string",
             "default": "",
