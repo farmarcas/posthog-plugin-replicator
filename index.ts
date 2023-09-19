@@ -72,7 +72,7 @@ const plugin: Plugin<ReplicatorMetaInput> = {
         if (batch.length > 0) {
             const batchDescription = `${batch.length} event${batch.length > 1 ? 's' : ''}`
 
-            await fetch(`https://${config.host.replace(/\/$/, '')}/e`, {
+            await fetch(`${config.host.replace(/\/$/, '')}/e`, {
                 method: 'POST',
                 body: JSON.stringify(batch),
                 headers: { 'Content-Type': 'application/json' },

@@ -1,5 +1,5 @@
 {
-    "name": "Replicator",
+    "name": "Blue/Green Replicator",
     "url": "https://github.com/PostHog/posthog-plugin-replicator",
     "description": "Replicate PostHog event stream in another PostHog instance",
     "main": "index.ts",
